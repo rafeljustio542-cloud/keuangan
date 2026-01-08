@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Financial Pro | Cerdas Finansial</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        
+        :root {
+            --app-bg: #0f172a;
+            --primary: #3b82f6;
+            --safe-area-top: env(safe-area-inset-top);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--app-bg); 
+            color: #f8fafc;
+            overscroll-behavior-y: contain;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        header { padding-top: calc(1.25rem + var(--safe-area-top)); }
+
+        #auth-overlay {
+            position: fixed; inset: 0; z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            background: #0f172a; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-hidden { opacity: 0; visibility: hidden; transform: scale(1.1); }
+
+        .input-mobile {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; font-size: 16px; transition: all 0.3s ease;
+        }
+
+        .input-mobile:focus { border-color: var(--primary); outline: none; }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%; width: 32px; height: 32px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn-active:active { transform: scale(0.95); opacity: 0.9; }
+        
+        .list-item-enter { animation: slideUp 0.4s ease forwards; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <div id="auth-overlay">
+        <div class="w-full max-w-sm p-8 rounded-[3.5rem] glass-card shadow-2xl mx-4">
+            <div class="text-center mb-10">
+                <div class="inline-flex p-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2rem] mb-6 shadow-2xl shadow-blue-500/40">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <h2 class="text-4xl font-extrabold tracking-tighter mb-2">FinPro</h2>
+                <p class="text-slate-400 text-sm">Kelola aset digital Anda dengan aman</p>
+            </div>
+
+            <div id="auth-options" class="space-y-4">
+                <button onclick="window.switchView('email', 'login')" class="w-full btn-active flex items-center justify-between px-6 bg-blue-600 text-white py-5 rounded-2xl font-bold shadow-lg shadow-blue-500/30">
+                    <span>Masuk</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </button>
+                <button onclick="window.switchView('email', 'register')" class="w-full btn-active flex items-center justify-between px-6 bg-slate-800 text-white py-5 rounded-2xl font-bold border border-white/5">
+                    <span>Daftar Akun</span>
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                </button>
+            </div>
+
+            <div id="email-view" class="hidden space-y-4">
+                <button onclick="window.switchView('options')" class="text-xs text-blue-400 font-bold flex items-center gap-1 mb-4">Kembali</button>
+                <div id="email-mode-label" class="text-center text-[10px] font-black tracking-widest text-blue-400 bg-blue-400/5 py-2 rounded-xl mb-4">MODE: LOGIN</div>
+                <input type="email" id="email-input" placeholder="Email" class="w-full px-5 py-4 rounded-2xl input-mobile">
+                <input type="password" id="pass-input" placeholder="Password" class="w-full px-5 py-4 rounded-2xl input-mobile">
+                <button id="email-action-btn" class="w-full bg-blue-600 py-4 rounded-2xl font-black btn-active mt-2">LANJUTKAN</button>
+                <button onclick="window.toggleEmailMode()" id="email-toggle-btn" class="w-full text-center text-xs text-slate-500 mt-4">Belum ada akun? <span class="text-blue-400 font-bold">Daftar</span></button>
+            </div>
+
+            <div id="auth-loading" class="hidden flex flex-col items-center mt-8">
+                <div class="loader mb-4"></div>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black animate-pulse">Mengamankan Data...</p>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-slate-900/60 backdrop-blur-xl border-b border-white/5 px-6 pb-5 sticky top-0 z-50">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
+            <div>
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-0.5">Ringkasan Saku</p>
+                <h1 id="user-display-name" class="text-lg font-black text-white truncate max-w-[180px]">Dashboard</h1>
+            </div>
+            <button id="logout-btn" class="w-10 h-10 flex items-center justify-center text-rose-400 bg-rose-400/10 rounded-2xl border border-rose-400/20 active:scale-90 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-xl mx-auto w-full px-5 pt-8 pb-32 overflow-y-auto">
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 rounded-[3rem] mb-10 shadow-2xl shadow-blue-500/30">
+            <p class="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-70">Total Saldo</p>
+            <h2 id="balance" class="text-4xl font-black text-white mb-6">Rp 0</h2>
+            <div class="flex gap-4">
+                <div class="flex-1 bg-white/10 p-4 rounded-2xl">
+                    <p id="total-income" class="text-sm font-black text-emerald-400">+ Rp 0</p>
+                </div>
+                <div class="flex-1 bg-white/10 p-4 rounded-2xl">
+                    <p id="total-expense" class="text-sm font-black text-rose-400">- Rp 0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-8 rounded-[3rem] mb-10">
+            <form id="transaction-form" class="space-y-4">
+                <input type="text" id="desc" placeholder="Keterangan" required class="w-full px-6 py-4 rounded-2xl input-mobile text-sm font-bold">
+                <input type="number" id="amount" placeholder="Nominal" required class="w-full px-6 py-4 rounded-2xl input-mobile text-sm font-black">
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="cursor-pointer"><input type="radio" name="type" value="income" checked class="hidden peer"><div class="text-center py-4 rounded-2xl border border-white/5 peer-checked:bg-emerald-500 text-[11px] font-black uppercase">Masuk</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="type" value="expense" class="hidden peer"><div class="text-center py-4 rounded-2xl border border-white/5 peer-checked:bg-rose-500 text-[11px] font-black uppercase">Keluar</div></label>
+                </div>
+                <button class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase tracking-widest btn-active">Simpan</button>
+            </form>
+        </div>
+
+        <div id="transaction-list" class="space-y-4"></div>
+    </main>
+
+    <div id="msg-box" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800/90 backdrop-blur-md px-8 py-4 rounded-[2rem] text-xs font-black text-white shadow-2xl z-[100] opacity-0 pointer-events-none transition-all duration-500 scale-90">Sistem</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- KONFIGURASI FIREBASE ---
+        // Ganti objek di bawah ini dengan config dari Firebase Console Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSy...",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "12345",
+            appId: "1:12345:web:abcde"
+        };
+
+        // Inisialisasi Firebase secara aman
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = "finpro-pwa-v2";
+
+        let currentUser = null;
+        let emailMode = 'login';
+
+        // Message Helper
+        const showMsg = (txt) => {
+            const box = document.getElementById('msg-box');
+            box.innerText = txt;
+            box.classList.remove('opacity-0', 'scale-90');
+            setTimeout(() => box.classList.add('opacity-0', 'scale-90'), 3000);
+        };
+
+        // UI Functions (Dibuat global agar bisa diakses onclick di HTML)
+        window.switchView = (view, mode) => {
+            document.getElementById('auth-options').classList.add('hidden');
+            document.getElementById('email-view').classList.add('hidden');
+            if(view === 'options') document.getElementById('auth-options').classList.remove('hidden');
+            if(view === 'email') {
+                emailMode = mode || 'login';
+                updateEmailUI();
+                document.getElementById('email-view').classList.remove('hidden');
+            }
+        };
+
+        window.toggleEmailMode = () => {
+            emailMode = (emailMode === 'login') ? 'register' : 'login';
+            updateEmailUI();
+        };
+
+        function updateEmailUI() {
+            document.getElementById('email-mode-label').innerText = `MODE: ${emailMode.toUpperCase()}`;
+            document.getElementById('email-action-btn').innerText = emailMode === 'login' ? 'MASUK' : 'DAFTAR';
+        }
+
+        // Auth Logic
+        document.getElementById('email-action-btn').onclick = async () => {
+            const email = document.getElementById('email-input').value;
+            const pass = document.getElementById('pass-input').value;
+            if(!email || !pass) return showMsg("Lengkapi data!");
+
+            document.getElementById('auth-loading').classList.remove('hidden');
+            try {
+                if(emailMode === 'login') await signInWithEmailAndPassword(auth, email, pass);
+                else await createUserWithEmailAndPassword(auth, email, pass);
+            } catch (err) {
+                showMsg("Error: " + err.message);
+                document.getElementById('auth-loading').classList.add('hidden');
+            }
+        };
+
+        document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('auth-overlay').classList.add('auth-hidden');
+                document.getElementById('user-display-name').innerText = user.email.split('@')[0];
+                setupSync();
+            } else {
+                document.getElementById('auth-overlay').classList.remove('auth-hidden');
+                document.getElementById('auth-loading').classList.add('hidden');
+                window.switchView('options');
+            }
+        });
+
+        // Core App Logic
+        function setupSync() {
+            if (!currentUser) return;
+            const path = collection(db, 'users', currentUser.uid, 'transactions');
+            onSnapshot(path, (snap) => {
+                const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderTransactions(data.sort((a,b) => b.timestamp - a.timestamp));
+            });
+        }
+
+        function renderTransactions(data) {
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = '';
+            let inc = 0, exp = 0;
+
+            data.forEach(t => {
+                const isInc = t.type === 'income';
+                if(isInc) inc += t.amount; else exp += t.amount;
+                
+                const card = document.createElement('div');
+                card.className = "glass-card p-5 rounded-[2.5rem] flex justify-between items-center list-item-enter";
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="font-black text-sm">${t.desc}</div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-black ${isInc ? 'text-emerald-400' : 'text-rose-400'}">Rp ${t.amount.toLocaleString()}</span>
+                        <button onclick="window.deleteTx('${t.id}')" class="text-rose-500">×</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+
+            document.getElementById('total-income').innerText = "+ Rp " + inc.toLocaleString();
+            document.getElementById('total-expense').innerText = "- Rp " + exp.toLocaleString();
+            document.getElementById('balance').innerText = "Rp " + (inc - exp).toLocaleString();
+        }
+
+        document.getElementById('transaction-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const desc = document.getElementById('desc').value;
+            const type = document.querySelector('input[name="type"]:checked').value;
+            
+            try {
+                await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), {
+                    desc, amount, type, timestamp: Date.now()
+                });
+                e.target.reset();
+                showMsg("Berhasil disimpan!");
+            } catch (e) { showMsg("Gagal simpan"); }
+        };
+
+        window.deleteTx = async (id) => {
+            if(confirm("Hapus?")) {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'transactions', id));
+                showMsg("Terhapus");
+            }
+        };
+    </script>
+</body>
+</html>
